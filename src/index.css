@@ -1,0 +1,138 @@
+/* ✅ 1. Primero siempre los @import externos */
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, Consolas, monospace;
+  --font-montserrat: 'Montserrat', system-ui, sans-serif;
+  --font-poppins: 'Poppins', system-ui, sans-serif;
+  --font-display: var(--font-poppins);
+    /* Colores paleta */
+  --color-primero: #FFFFFF;
+  --color-segundo: #050401;
+  --color-tercero: #FF1B1C;
+  --color-cuarto: #303036;
+  --color-quinto: #5465FF;
+  --color-sexto: #125F06;  
+  --color-septimo: #FFF0F3;
+  --color-octavo: #FF3366;
+  --color-noveno:#e6007a
+  /* Paleta de colores */
+}
+:root {
+  --text: #6b6375;
+  --text-h: #08060d;
+  --bg: #fff;
+  --border: #e5e4e7;
+  --code-bg: #f4f3ec;
+  --accent: #aa3bff;
+  --accent-bg: rgba(170, 59, 255, 0.1);
+  --accent-border: rgba(170, 59, 255, 0.5);
+  --social-bg: rgba(244, 243, 236, 0.5);
+  --shadow:
+    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+
+
+
+  font: 18px/145% var(--sans);
+  letter-spacing: 0.18px;
+  color-scheme: light dark;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 1024px) {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #9ca3af;
+    --text-h: #f3f4f6;
+    --bg: #16171d;
+    --border: #2e303a;
+    --code-bg: #1f2028;
+    --accent: #c084fc;
+    --accent-bg: rgba(192, 132, 252, 0.15);
+    --accent-border: rgba(192, 132, 252, 0.5);
+    --social-bg: rgba(47, 48, 58, 0.5);
+    --shadow:
+      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+  }
+
+  #social .button-icon {
+    filter: invert(1) brightness(2);
+  }
+}
+
+
+
+ html {
+  scroll-behavior: smooth;
+}
+
+
+
+
+/* Chincheta mapa inmuebles */
+
+.price-pin {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e6007a;
+  border: 2px solid fff;
+  border-radius: 5px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color:  #fff;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  transform-origin: bottom center;
+}
+
+/* La "puntita" del pin, apuntando hacia abajo */
+.price-pin::after {
+  content: "";
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 11px;
+  height: 11px;
+  background: #e6007a;
+  border-right: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  border-radius: 0 0 2px 0;
+}
+
+.price-pin:hover {
+  transform: scale(1.12);
+  z-index: 1000 !important; /* para que quede por encima de sus vecinos al agrandarse */
+}
+
+/* Estado seleccionado — relleno rosa sólido, mismo patrón que tus polígonos */
+.price-pin.selected {
+  background: #fff;
+  color: #e6007a;
+}
+.price-pin.selected::after {
+  background: #fff;
+  border-color: #fff;
+}
+
+/* Chincheta mapa inmuebles */
