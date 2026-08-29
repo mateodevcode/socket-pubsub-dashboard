@@ -34,7 +34,7 @@ api.interceptors.response.use(
       console.warn("Sesión expirada o no autorizada. Redirigiendo al login...");
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
-      // window.location.href = '/login'; // Descomenta cuando tengas la ruta de login
+      window.location.href = "/login"; // Descomenta cuando tengas la ruta de login
     }
     return Promise.reject(error);
   },
