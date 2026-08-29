@@ -18,8 +18,11 @@ import { InstalledToolsCard } from "../components/commands/InstalledToolsCard";
 import { NetworkThreatsCard } from "../components/commands/NetworkThreatsCard";
 import { TopAttackersCard } from "../components/commands/TopAttackersCard";
 import { ActiveConnectionsCard } from "../components/commands/ActiveConnectionsCard";
+import { useAuthStore } from "../store/authStore";
 
 export default function AdminPanel() {
+  const { user, logout } = useAuthStore();
+
   const [logs, setLogs] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
   const [actionsChannelId, setActionsChannelId] = useState("");
@@ -358,6 +361,28 @@ export default function AdminPanel() {
               Monitoreo y control de infraestructura VPS
             </p>
           </div>
+
+          <div className="min-h-screen bg-gray-900 text-white p-8">
+            <div className="flex justify-between items-center mb-8">
+              <h1 className="text-3xl font-bold">Dashboard de Monitoreo</h1>
+              <button
+                onClick={logout}
+                className="bg-red-600 px-4 py-2 rounded hover:bg-red-700"
+              >
+                Cerrar Sesión
+              </button>
+            </div>
+            <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+              <p className="text-green-400 text-lg">
+                ✅ Bienvenido, {user?.username}. Estás autenticado
+                correctamente.
+              </p>
+              <p className="text-gray-400 mt-2">
+                Aquí iremos agregando las gráficas y controles del agente.
+              </p>
+            </div>
+          </div>
+
           <div className="flex items-center gap-3">
             {adminIp && (
               <div className="px-3 py-2 rounded-full border border-blue-800 bg-blue-950/50 text-blue-400 flex items-center gap-2 font-mono text-xs shadow-sm">
