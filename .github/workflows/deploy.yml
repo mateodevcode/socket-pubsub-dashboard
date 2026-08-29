@@ -1,0 +1,42 @@
+name: Deploy Frontend Dashboard
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15 # 15 min es más que suficiente para un build de Vite
+
+    steps:
+      - name: SSH Deploy Frontend to VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          command_timeout: 15m
+          script: |
+            set -e
+
+            echo " Iniciando despliegue del Frontend Dashboard..."
+
+            # 1. Ir al directorio de trabajo en el VPS
+            cd /var/www/socket-pubsub-dashboard
+
+            echo "→ Descartando cambios locales no versionados..."
+            git reset --hard HEAD
+            git clean -fd
+
+            echo "→ Actualizando código desde GitHub..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "→ Instalando dependencias (Node.js)..."
+            npm install
+
+            echo "→ Construyendo el frontend (Vite)..."
+            npm run build
+
+            echo "✅ ¡Despliegue del Frontend completado con éxito!"
