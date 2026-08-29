@@ -122,8 +122,12 @@ export default function AdminPanel() {
     ws.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
-        if (msg.source === "rust-admin-agent-01") {
-          const { type, action, success, output } = msg.payload;
+
+        // ✅ CORRECCIÓN 1: Usar el nombre exacto que envía el backend Rust
+        if (msg.source === "admin-agent-01" || msg.agent === "admin-agent-01") {
+          // ✅ CORRECCIÓN 2: Extraer datos de forma segura (a veces viene anidado, a veces no)
+          const data = msg.payload || msg;
+          const { type, action, success, output } = data;
 
           if (action === "get_threats_history") {
             console.log("🔍 DEBUG BACKEND:", { action, success, output });
@@ -362,25 +366,16 @@ export default function AdminPanel() {
             </p>
           </div>
 
-          <div className="min-h-screen bg-gray-900 text-white p-8">
-            <div className="flex justify-between items-center mb-8">
-              <h1 className="text-3xl font-bold">Dashboard de Monitoreo</h1>
-              <button
-                onClick={logout}
-                className="bg-red-600 px-4 py-2 rounded hover:bg-red-700"
-              >
-                Cerrar Sesión
-              </button>
-            </div>
-            <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
-              <p className="text-green-400 text-lg">
-                ✅ Bienvenido, {user?.username}. Estás autenticado
-                correctamente.
-              </p>
-              <p className="text-gray-400 mt-2">
-                Aquí iremos agregando las gráficas y controles del agente.
-              </p>
-            </div>
+          <div className="flex justify-between items-center mb-8">
+            <button
+              onClick={logout}
+              className="bg-red-600 px-4 py-2 rounded hover:bg-red-700"
+            >
+              Cerrar Sesión
+            </button>
+            <p className="text-green-400 text-lg">
+              ✅ Bienvenido, {user?.username}. Estás autenticado correctamente.
+            </p>
           </div>
 
           <div className="flex items-center gap-3">
