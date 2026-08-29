@@ -23,7 +23,7 @@ function AppRouter() {
           }
         />
         <Route
-          path="/admin"
+          path="/dashboard"
           element={
             <ProtectedRoute>
               <AdminPanel />
