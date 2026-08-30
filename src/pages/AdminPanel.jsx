@@ -270,17 +270,17 @@ export default function AdminPanel() {
   }, [isConnected, actionsChannelId]);
 
   // Actualización automática de CONEXIONES ACTIVAS (Cada 10 segundos)
-  useEffect(() => {
-    if (!isConnected || !actionsChannelId) return;
+  // useEffect(() => {
+  //   if (!isConnected || !actionsChannelId) return;
 
-    sendCommand("get_active_connections");
+  //   sendCommand("get_active_connections");
 
-    const interval = setInterval(() => {
-      sendCommand("get_active_connections");
-    }, 10000);
+  //   const interval = setInterval(() => {
+  //     sendCommand("get_active_connections");
+  //   }, 10000);
 
-    return () => clearInterval(interval);
-  }, [isConnected, actionsChannelId]);
+  //   return () => clearInterval(interval);
+  // }, [isConnected, actionsChannelId]);
 
   const addLog = (message, type = "info") => {
     setLogs((prev) => [
