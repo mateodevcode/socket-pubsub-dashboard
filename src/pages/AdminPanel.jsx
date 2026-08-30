@@ -129,7 +129,7 @@ export default function AdminPanel() {
           const data = msg.payload || msg;
           const { type, action, success, output } = data;
 
-          if (action === "get_threats_history") {
+          if (action === "network_threats") {
             console.log("🔍 DEBUG BACKEND:", { action, success, output });
           }
 

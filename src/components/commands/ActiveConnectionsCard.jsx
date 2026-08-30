@@ -9,11 +9,77 @@ import {
 } from "react-icons/fa";
 
 export const ActiveConnectionsCard = ({ data, adminIp, serverIp }) => {
-  // Función mejorada para determinar el estado de la sesión
-  const getSessionStatus = (session) => {
-    const { ip_status, user_status, suspicious_command, from } = session;
+  // Detectar formato de datos
+  const isSessionFormat = (item) => {
+    return item.user !== undefined || item.from !== undefined;
+  };
 
-    // 1. Si es ADMIN (IP del administrador) y usuario esperado
+  const isConnectionFormat = (item) => {
+    return item.peer_ip !== undefined || item.local_ip !== undefined;
+  };
+
+  // Transformar datos de conexión TCP a formato de sesión
+  const transformConnectionToSession = (conn) => {
+    // Determinar si la IP es del admin
+    const isAdmin = adminIp && conn.peer_ip === adminIp;
+
+    // Determinar estado del usuario (si no tenemos info, asumir externo)
+    const userStatus = isAdmin ? "EXPECTED" : "UNKNOWN";
+    const ipStatus = isAdmin ? "KNOWN" : "EXTERNAL";
+
+    // Extraer nombre de usuario de la IP (si es admin, es root)
+    const user = isAdmin ? "root" : "unknown";
+
+    return {
+      user: user,
+      from: conn.peer_ip,
+      login: "N/A", // No tenemos esta info en conexiones TCP
+      idle: "0s",
+      what: conn.local_port === 22 ? "ssh" : "tcp-connection",
+      user_status: userStatus,
+      ip_status: ipStatus,
+      suspicious_command: false,
+      country: conn.country || "XX",
+      // Mantener datos originales para contexto
+      _original: conn,
+      _type: "connection",
+    };
+  };
+
+  // Normalizar datos
+  const normalizedData = data.map((item) => {
+    if (isSessionFormat(item)) {
+      return { ...item, _type: "session" };
+    } else if (isConnectionFormat(item)) {
+      return transformConnectionToSession(item);
+    }
+    return item;
+  });
+
+  // Función para determinar estado de sesión (adaptada)
+  const getSessionStatus = (session) => {
+    const { from, ip_status, user_status, suspicious_command, _type } = session;
+
+    // Si es conexión TCP sin autenticación
+    if (_type === "connection") {
+      const isAdmin = adminIp && from === adminIp;
+      if (isAdmin) {
+        return {
+          label: "ADMIN",
+          color: "bg-blue-900/30 text-blue-400 border-blue-700",
+          icon: <FaUserShield className="w-4 h-4" />,
+          priority: 0,
+        };
+      }
+      return {
+        label: "🌐 CONEXIÓN",
+        color: "bg-gray-900/30 text-gray-400 border-gray-700",
+        icon: <FaNetworkWired className="w-4 h-4" />,
+        priority: 1,
+      };
+    }
+
+    // Lógica para sesiones (formato nuevo)
     if (adminIp && from === adminIp && user_status === "EXPECTED") {
       return {
         label: "ADMIN",
@@ -23,7 +89,6 @@ export const ActiveConnectionsCard = ({ data, adminIp, serverIp }) => {
       };
     }
 
-    // 2. Si el usuario es sospechoso (no esperado)
     if (user_status === "SUSPICIOUS") {
       return {
         label: "🚨 INTRUSO",
@@ -33,7 +98,6 @@ export const ActiveConnectionsCard = ({ data, adminIp, serverIp }) => {
       };
     }
 
-    // 3. Si tiene comandos sospechosos (reverse shell)
     if (suspicious_command) {
       return {
         label: "⚠️ REVERSE SHELL",
@@ -44,7 +108,6 @@ export const ActiveConnectionsCard = ({ data, adminIp, serverIp }) => {
       };
     }
 
-    // 4. Si es IP externa no conocida
     if (ip_status === "EXTERNAL") {
       return {
         label: "🌍 EXTERNO",
@@ -54,7 +117,6 @@ export const ActiveConnectionsCard = ({ data, adminIp, serverIp }) => {
       };
     }
 
-    // 5. Si es IP interna (red local)
     if (ip_status === "INTERNAL") {
       return {
         label: "🏠 INTERNO",
@@ -64,7 +126,6 @@ export const ActiveConnectionsCard = ({ data, adminIp, serverIp }) => {
       };
     }
 
-    // 6. Por defecto
     return {
       label: "👤 USUARIO",
       color: "bg-gray-900/30 text-gray-400 border-gray-700",
@@ -73,8 +134,8 @@ export const ActiveConnectionsCard = ({ data, adminIp, serverIp }) => {
     };
   };
 
-  // Ordenar sesiones por prioridad (más peligroso primero)
-  const sortedData = [...data].sort((a, b) => {
+  // Ordenar datos por prioridad
+  const sortedData = [...normalizedData].sort((a, b) => {
     const statusA = getSessionStatus(a);
     const statusB = getSessionStatus(b);
     return statusB.priority - statusA.priority;
@@ -82,11 +143,18 @@ export const ActiveConnectionsCard = ({ data, adminIp, serverIp }) => {
 
   // Calcular estadísticas
   const stats = {
-    total: data.length,
-    admin: data.filter((s) => adminIp && s.from === adminIp).length,
-    suspicious: data.filter((s) => s.user_status === "SUSPICIOUS").length,
-    external: data.filter((s) => s.ip_status === "EXTERNAL").length,
-    internal: data.filter((s) => s.ip_status === "INTERNAL").length,
+    total: normalizedData.length,
+    admin: normalizedData.filter((s) => {
+      if (s._type === "connection") {
+        return adminIp && s.from === adminIp;
+      }
+      return adminIp && s.from === adminIp && s.user_status === "EXPECTED";
+    }).length,
+    suspicious: normalizedData.filter(
+      (s) => s.user_status === "SUSPICIOUS" || s.suspicious_command,
+    ).length,
+    external: normalizedData.filter((s) => s.ip_status === "EXTERNAL").length,
+    internal: normalizedData.filter((s) => s.ip_status === "INTERNAL").length,
   };
 
   return (
@@ -99,10 +167,14 @@ export const ActiveConnectionsCard = ({ data, adminIp, serverIp }) => {
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-100">
-              🎯 Sesiones Activas en Vivo
+              {normalizedData.some((s) => s._type === "session")
+                ? "🎯 Sesiones Activas en Vivo"
+                : "🌐 Conexiones Activas"}
             </h3>
             <p className="text-xs text-gray-400">
-              Usuarios REALMENTE conectados AHORA (no intentos fallidos)
+              {normalizedData.some((s) => s._type === "session")
+                ? "Usuarios REALMENTE conectados AHORA (no intentos fallidos)"
+                : "Sesiones TCP establecidas en tiempo real"}
             </p>
           </div>
         </div>
@@ -114,8 +186,8 @@ export const ActiveConnectionsCard = ({ data, adminIp, serverIp }) => {
         )}
       </div>
 
-      {/* ESTADÍSTICAS RÁPIDAS */}
-      {data.length > 0 && (
+      {/* ESTADÍSTICAS */}
+      {normalizedData.length > 0 && (
         <div className="grid grid-cols-4 gap-3 mb-4">
           <div className="bg-gray-900/30 rounded-lg p-2 text-center border border-gray-700/50">
             <div className="text-xs text-gray-400">Total</div>
@@ -141,10 +213,10 @@ export const ActiveConnectionsCard = ({ data, adminIp, serverIp }) => {
       )}
 
       {/* CONTENIDO */}
-      {!data || data.length === 0 ? (
+      {!normalizedData || normalizedData.length === 0 ? (
         <div className="text-center py-12 text-gray-500 flex flex-col items-center gap-2">
           <FaUserClock className="w-8 h-8 opacity-50" />
-          <p>✅ No hay sesiones activas en este momento.</p>
+          <p>✅ No hay conexiones activas en este momento.</p>
           <p className="text-xs text-gray-600">
             Servidor: <span className="font-mono">{serverIp}</span>
           </p>
@@ -153,18 +225,20 @@ export const ActiveConnectionsCard = ({ data, adminIp, serverIp }) => {
         <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
           {sortedData.map((session, idx) => {
             const status = getSessionStatus(session);
+            const isConnection = session._type === "connection";
+
             return (
               <div
-                key={`${session.from}-${session.user}-${idx}`}
+                key={`${session.from || session.peer_ip}-${idx}`}
                 className={`flex items-center justify-between p-4 rounded-lg border transition-all ${status.color}`}
               >
                 <div className="flex items-center gap-4 flex-1">
                   {status.icon}
                   <div className="flex flex-col flex-1">
-                    {/* Usuario e IP */}
+                    {/* Usuario / IP */}
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-mono text-sm font-bold">
-                        {session.user}
+                        {isConnection ? session.from : session.user}
                       </span>
                       <span className="text-gray-500 text-xs">@</span>
                       <span className="font-mono text-sm">{session.from}</span>
@@ -185,36 +259,62 @@ export const ActiveConnectionsCard = ({ data, adminIp, serverIp }) => {
                       )}
                     </div>
 
-                    {/* Detalles de la sesión */}
+                    {/* Detalles */}
                     <div className="flex items-center gap-3 mt-1 text-[11px] opacity-80 flex-wrap">
-                      <span className="text-gray-400">Login:</span>
-                      <span className="font-mono text-gray-300">
-                        {session.login || "N/A"}
-                      </span>
-                      <span className="text-gray-600">•</span>
-                      <span className="text-gray-400">IDLE:</span>
-                      <span className="font-mono text-gray-300">
-                        {session.idle || "0s"}
-                      </span>
-                      <span className="text-gray-600">•</span>
-                      <span className="text-gray-400">Comando:</span>
-                      <span className="font-mono text-gray-300 truncate max-w-[200px]">
-                        {session.what || "bash"}
-                      </span>
-                      {session.ip_status === "EXTERNAL" && (
+                      {isConnection ? (
+                        // Mostrar detalles de conexión TCP
+                        <>
+                          <span className="text-gray-400">Local:</span>
+                          <span className="font-mono text-gray-300">
+                            {session._original?.local_ip}:
+                            {session._original?.local_port}
+                          </span>
+                          <span className="text-gray-600">→</span>
+                          <span className="text-gray-400">Remoto:</span>
+                          <span className="font-mono text-gray-300">
+                            {session._original?.peer_port}
+                          </span>
+                          <span className="text-gray-600">•</span>
+                          <span className="text-gray-400">PID:</span>
+                          <span className="font-mono text-gray-300">
+                            {session._original?.pid || 0}
+                          </span>
+                        </>
+                      ) : (
+                        // Mostrar detalles de sesión
+                        <>
+                          <span className="text-gray-400">Login:</span>
+                          <span className="font-mono text-gray-300">
+                            {session.login || "N/A"}
+                          </span>
+                          <span className="text-gray-600">•</span>
+                          <span className="text-gray-400">IDLE:</span>
+                          <span className="font-mono text-gray-300">
+                            {session.idle || "0s"}
+                          </span>
+                          <span className="text-gray-600">•</span>
+                          <span className="text-gray-400">Comando:</span>
+                          <span className="font-mono text-gray-300 truncate max-w-[200px]">
+                            {session.what || "bash"}
+                          </span>
+                        </>
+                      )}
+                      {session.country && session.country !== "XX" && (
                         <>
                           <span className="text-gray-600">•</span>
-                          <FaFlag className="text-yellow-500 w-3 h-3" />
-                          <span className="font-bold text-yellow-400">
-                            {session.country || "XX"}
-                          </span>
+                          <img
+                            src={`https://flagcdn.com/w20/${session.country.toLowerCase()}.png`}
+                            alt={session.country}
+                            className="w-4 h-3 rounded-sm"
+                          />
+                          <span className="font-bold">{session.country}</span>
                         </>
                       )}
                     </div>
                   </div>
                 </div>
 
-                {/* Badge de estado */}
+                {/* Badge */}
                 <div className="flex items-center gap-4">
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-bold border ${status.color}`}
@@ -228,7 +328,7 @@ export const ActiveConnectionsCard = ({ data, adminIp, serverIp }) => {
         </div>
       )}
 
-      {/* LEYENDA MEJORADA */}
+      {/* LEYENDA */}
       <div className="mt-4 pt-4 border-t border-gray-700/50 flex flex-wrap gap-3 text-xs text-gray-500">
         <span className="flex items-center gap-1">
           <FaUserShield className="text-blue-500" /> Tu IP (Segura)
