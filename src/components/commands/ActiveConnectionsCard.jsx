@@ -11,8 +11,6 @@ import {
 } from "react-icons/fa";
 
 export const ActiveConnectionsCard = ({ data, adminIp, serverIp }) => {
-  // data = { ssh_sessions: [...], web_connections: [...] }
-
   const getSessionStatus = (session) => {
     const { ip_status, user_status, suspicious_command, from } = session;
 
