@@ -43,8 +43,9 @@ export default function AdminPanel() {
   const [activeConnections, setActiveConnections] = useState([]);
   const [connectionsData, setConnectionsData] = useState({
     server_ip: null,
-    connections: [],
-  }); // 👈 NUEVO
+    ssh_sessions: [], // ← CAMBIADO
+    web_connections: [], // ← CAMBIADO
+  });
 
   const [dashboard, setDashboard] = useState({
     ram_info: { output: null, success: false, timestamp: null },
