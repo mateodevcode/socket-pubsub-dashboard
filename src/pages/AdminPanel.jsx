@@ -515,7 +515,7 @@ export default function AdminPanel() {
           {/* 👇 UN SOLO ActiveConnectionsCard con los datos correctos */}
           <div className="transition-all duration-300 w-full mt-6">
             <ActiveConnectionsCard
-              data={connectionsData.connections}
+              data={connectionsData}
               adminIp={adminIp}
               serverIp={connectionsData.server_ip}
             />
