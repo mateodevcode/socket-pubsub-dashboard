@@ -21,15 +21,16 @@ import { ActiveConnectionsCard } from "../components/commands/ActiveConnectionsC
 import { useAuthStore } from "../store/authStore";
 import { getLogColor } from "../lib/getLogColor";
 import { parseDashboardData } from "../lib/parseDashboardData";
+import { useAdminIp } from "../hooks/useAdminIp";
 
 export default function AdminPanel() {
   const { user, logout } = useAuthStore();
+  const { ip: adminIp } = useAdminIp();
 
   const [logs, setLogs] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
   const [actionsChannelId, setActionsChannelId] = useState("");
   const [eventsChannelId, setEventsChannelId] = useState("");
-  const [adminIp, setAdminIp] = useState(null);
 
   // ============================================
   // DINÁMICOS (Actualizan cada 5s desde servidor)
@@ -74,22 +75,11 @@ export default function AdminPanel() {
   // DETECTAR IP PROPIA AL CARGAR
   // ============================================
   useEffect(() => {
-    const detectAdminIp = async () => {
-      try {
-        const res = await fetch("https://api.ipify.org?format=json");
-        const data = await res.json();
-        const myIp = data.ip;
-        setAdminIp(myIp);
-
-        sendCommand("set_admin_ip", { ip: myIp });
-        console.log("🏠 Tu IP detectada:", myIp);
-      } catch (error) {
-        console.error("Error detectando IP propia:", error);
-      }
-    };
-
-    detectAdminIp();
-  }, []);
+    if (adminIp) {
+      sendCommand("set_admin_ip", { ip: adminIp });
+      console.log("🏠 Tu IP detectada:", adminIp);
+    }
+  }, [adminIp]);
 
   // ============================================
   // 1. OBTENER UUIDs DE CANALES
@@ -150,11 +140,9 @@ export default function AdminPanel() {
             setRamInfo(parseDashboardData(output));
           }
           if (action === "disk_space") {
-            console.log(data);
             setDiskSpace(parseDashboardData(output));
           }
           if (action === "docker_info") {
-            console.log(data);
             setDockerInfo({
               containers: data.full_state?.containers || [],
               delta: data.delta || {

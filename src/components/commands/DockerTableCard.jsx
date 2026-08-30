@@ -280,7 +280,7 @@ export const DockerTableCard = ({ data }) => {
                         </span>
                       )}
                       <span
-                        className="text-sm font-medium text-gray-200 font-mono truncate block max-w-[150px] md:max-w-xs"
+                        className="text-sm font-medium text-gray-200 font-mono truncate block max-w-150 md:max-w-xs"
                         title={container.name}
                       >
                         {container.name}
