@@ -176,17 +176,11 @@ export default function AdminPanel() {
             }
           }
 
-          // 👇 NUEVO: Manejo de conexiones activas
           if (action === "get_active_connections") {
             if (success) {
               const parsedOutput = parseDashboardData(output);
-              console.log("🔍 Conexiones activas recibidas:", parsedOutput);
-
-              setConnectionsData({
-                server_ip: parsedOutput?.server_ip || null,
-                connections: parsedOutput?.connections || [],
-              });
-              setActiveConnections(parsedOutput?.connections || []);
+              console.log("🔍 Datos recibidos:", parsedOutput);
+              setConnectionsData(parsedOutput); // ✅ guardamos todo el objeto
             }
           }
 
