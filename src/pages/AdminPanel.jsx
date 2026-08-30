@@ -145,7 +145,7 @@ export default function AdminPanel() {
           const data = msg.payload || msg;
           const { type, action, success, output } = data;
 
-          if (action === "docker_info") {
+          if (action === "docker_infog") {
             console.log(data);
           }
 
@@ -157,15 +157,23 @@ export default function AdminPanel() {
             setDiskSpace(parseDashboardData(output));
           }
           if (action === "docker_info") {
-            if (success) {
-              setDockerInfo({
-                containers:
-                  data.full_state?.containers || data.output?.containers || [],
-                delta: data.delta,
-                timestamp: data.timestamp,
-              });
-            }
+            // 👇 Asegúrate de que extrae bien
+            const dockerData = msg.payload || msg;
+
+            setDockerInfo({
+              containers: dockerData.full_state?.containers || [],
+              delta: dockerData.delta || {
+                added: [],
+                removed: [],
+                changed: [],
+              },
+              timestamp: dockerData.timestamp,
+              success: dockerData.success,
+            });
+
+            console.log("🐳 Docker info recibido:", dockerData);
           }
+
           if (action === "uptime_check") {
             setUptimeCheck(parseDashboardData(output));
           }
@@ -228,7 +236,6 @@ export default function AdminPanel() {
           if (action === "get_active_connections") {
             if (success) {
               const parsedOutput = parseDashboardData(output);
-              console.log("🔍 Conexiones recibidas:", parsedOutput);
               setConnectionsData(parsedOutput);
             }
           }
