@@ -4,26 +4,94 @@ import {
   FaExclamationTriangle,
   FaServer,
   FaFlag,
+  FaUserClock,
+  FaSkull,
 } from "react-icons/fa";
 
 export const ActiveConnectionsCard = ({ data, adminIp, serverIp }) => {
-  const getConnectionStatus = (ip) => {
-    if (adminIp && ip === adminIp) {
+  // Función mejorada para determinar el estado de la sesión
+  const getSessionStatus = (session) => {
+    const { ip_status, user_status, suspicious_command, from } = session;
+
+    // 1. Si es ADMIN (IP del administrador) y usuario esperado
+    if (adminIp && from === adminIp && user_status === "EXPECTED") {
       return {
         label: "ADMIN",
         color: "bg-blue-900/30 text-blue-400 border-blue-700",
         icon: <FaUserShield className="w-4 h-4" />,
+        priority: 0,
       };
     }
+
+    // 2. Si el usuario es sospechoso (no esperado)
+    if (user_status === "SUSPICIOUS") {
+      return {
+        label: "🚨 INTRUSO",
+        color: "bg-red-900/40 text-red-400 border-red-700 animate-pulse",
+        icon: <FaSkull className="w-4 h-4" />,
+        priority: 3,
+      };
+    }
+
+    // 3. Si tiene comandos sospechosos (reverse shell)
+    if (suspicious_command) {
+      return {
+        label: "⚠️ REVERSE SHELL",
+        color:
+          "bg-orange-900/40 text-orange-400 border-orange-700 animate-pulse",
+        icon: <FaExclamationTriangle className="w-4 h-4" />,
+        priority: 3,
+      };
+    }
+
+    // 4. Si es IP externa no conocida
+    if (ip_status === "EXTERNAL") {
+      return {
+        label: "🌍 EXTERNO",
+        color: "bg-yellow-900/30 text-yellow-400 border-yellow-700",
+        icon: <FaFlag className="w-4 h-4" />,
+        priority: 2,
+      };
+    }
+
+    // 5. Si es IP interna (red local)
+    if (ip_status === "INTERNAL") {
+      return {
+        label: "🏠 INTERNO",
+        color: "bg-green-900/30 text-green-400 border-green-700",
+        icon: <FaServer className="w-4 h-4" />,
+        priority: 1,
+      };
+    }
+
+    // 6. Por defecto
     return {
-      label: "SOSPECHOSO",
-      color: "bg-rose-900/30 text-rose-400 border-rose-700 animate-pulse",
-      icon: <FaExclamationTriangle className="w-4 h-4" />,
+      label: "👤 USUARIO",
+      color: "bg-gray-900/30 text-gray-400 border-gray-700",
+      icon: <FaUserClock className="w-4 h-4" />,
+      priority: 1,
     };
+  };
+
+  // Ordenar sesiones por prioridad (más peligroso primero)
+  const sortedData = [...data].sort((a, b) => {
+    const statusA = getSessionStatus(a);
+    const statusB = getSessionStatus(b);
+    return statusB.priority - statusA.priority;
+  });
+
+  // Calcular estadísticas
+  const stats = {
+    total: data.length,
+    admin: data.filter((s) => adminIp && s.from === adminIp).length,
+    suspicious: data.filter((s) => s.user_status === "SUSPICIOUS").length,
+    external: data.filter((s) => s.ip_status === "EXTERNAL").length,
+    internal: data.filter((s) => s.ip_status === "INTERNAL").length,
   };
 
   return (
     <div className="bg-transparent dark:bg-gray-800 rounded-xl shadow-sm border-2 border-gray-800 p-6 hover:shadow-lg transition-all duration-200 w-full">
+      {/* HEADER */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-gray-900 rounded-lg border border-gray-700">
@@ -31,10 +99,10 @@ export const ActiveConnectionsCard = ({ data, adminIp, serverIp }) => {
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-100">
-              Conexiones Activas Ahora
+              🎯 Sesiones Activas en Vivo
             </h3>
             <p className="text-xs text-gray-400">
-              Sesiones TCP establecidas en tiempo real
+              Usuarios REALMENTE conectados AHORA (no intentos fallidos)
             </p>
           </div>
         </div>
@@ -46,66 +114,107 @@ export const ActiveConnectionsCard = ({ data, adminIp, serverIp }) => {
         )}
       </div>
 
+      {/* ESTADÍSTICAS RÁPIDAS */}
+      {data.length > 0 && (
+        <div className="grid grid-cols-4 gap-3 mb-4">
+          <div className="bg-gray-900/30 rounded-lg p-2 text-center border border-gray-700/50">
+            <div className="text-xs text-gray-400">Total</div>
+            <div className="text-lg font-bold text-cyan-400">{stats.total}</div>
+          </div>
+          <div className="bg-gray-900/30 rounded-lg p-2 text-center border border-gray-700/50">
+            <div className="text-xs text-gray-400">Admin</div>
+            <div className="text-lg font-bold text-blue-400">{stats.admin}</div>
+          </div>
+          <div className="bg-gray-900/30 rounded-lg p-2 text-center border border-gray-700/50">
+            <div className="text-xs text-gray-400">Sospechosos</div>
+            <div className="text-lg font-bold text-rose-400">
+              {stats.suspicious}
+            </div>
+          </div>
+          <div className="bg-gray-900/30 rounded-lg p-2 text-center border border-gray-700/50">
+            <div className="text-xs text-gray-400">Externos</div>
+            <div className="text-lg font-bold text-yellow-400">
+              {stats.external}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CONTENIDO */}
       {!data || data.length === 0 ? (
         <div className="text-center py-12 text-gray-500 flex flex-col items-center gap-2">
-          <FaNetworkWired className="w-8 h-8 opacity-50" />
-          <p>No hay conexiones externas activas en este momento.</p>
-          {serverIp && serverIp !== "unknown" && (
-            <p className="text-xs text-gray-600">
-              Servidor: <span className="font-mono">{serverIp}</span>
-            </p>
-          )}
+          <FaUserClock className="w-8 h-8 opacity-50" />
+          <p>✅ No hay sesiones activas en este momento.</p>
+          <p className="text-xs text-gray-600">
+            Servidor: <span className="font-mono">{serverIp}</span>
+          </p>
         </div>
       ) : (
-        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-          {data.map((conn, idx) => {
-            const status = getConnectionStatus(conn.peer_ip);
+        <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+          {sortedData.map((session, idx) => {
+            const status = getSessionStatus(session);
             return (
               <div
-                key={`${conn.peer_ip}-${conn.peer_port}-${idx}`}
+                key={`${session.from}-${session.user}-${idx}`}
                 className={`flex items-center justify-between p-4 rounded-lg border transition-all ${status.color}`}
               >
                 <div className="flex items-center gap-4 flex-1">
                   {status.icon}
                   <div className="flex flex-col flex-1">
-                    <div className="flex items-center gap-2">
+                    {/* Usuario e IP */}
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-mono text-sm font-bold">
-                        {conn.peer_ip}
+                        {session.user}
                       </span>
+                      <span className="text-gray-500 text-xs">@</span>
+                      <span className="font-mono text-sm">{session.from}</span>
                       {status.label === "ADMIN" && (
                         <span className="text-[10px] bg-blue-800 text-blue-200 px-1.5 py-0.5 rounded font-bold">
                           🏠 TÚ
                         </span>
                       )}
-                      <span className="text-[10px] text-gray-500">
-                        PID: {conn.pid || 0}
-                      </span>
+                      {session.user_status === "SUSPICIOUS" && (
+                        <span className="text-[10px] bg-red-800 text-red-200 px-1.5 py-0.5 rounded font-bold animate-pulse">
+                          🚨 USUARIO NO ESPERADO
+                        </span>
+                      )}
+                      {session.suspicious_command && (
+                        <span className="text-[10px] bg-orange-800 text-orange-200 px-1.5 py-0.5 rounded font-bold animate-pulse">
+                          💀 COMANDO SOSPECHOSO
+                        </span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-3 mt-1 text-[11px] opacity-80">
-                      <span className="text-gray-400">Local:</span>
+
+                    {/* Detalles de la sesión */}
+                    <div className="flex items-center gap-3 mt-1 text-[11px] opacity-80 flex-wrap">
+                      <span className="text-gray-400">Login:</span>
                       <span className="font-mono text-gray-300">
-                        {conn.local_ip}:{conn.local_port}
-                      </span>
-                      <span className="text-gray-600">→</span>
-                      <span className="text-gray-400">Remoto:</span>
-                      <span className="font-mono text-gray-300">
-                        {conn.peer_port}
+                        {session.login || "N/A"}
                       </span>
                       <span className="text-gray-600">•</span>
-                      {conn.country && conn.country !== "XX" && (
+                      <span className="text-gray-400">IDLE:</span>
+                      <span className="font-mono text-gray-300">
+                        {session.idle || "0s"}
+                      </span>
+                      <span className="text-gray-600">•</span>
+                      <span className="text-gray-400">Comando:</span>
+                      <span className="font-mono text-gray-300 truncate max-w-[200px]">
+                        {session.what || "bash"}
+                      </span>
+                      {session.ip_status === "EXTERNAL" && (
                         <>
-                          <img
-                            src={`https://flagcdn.com/w20/${conn.country.toLowerCase()}.png`}
-                            alt={conn.country}
-                            className="w-4 h-3 rounded-sm"
-                          />
-                          <span className="font-bold">{conn.country}</span>
+                          <span className="text-gray-600">•</span>
+                          <FaFlag className="text-yellow-500 w-3 h-3" />
+                          <span className="font-bold text-yellow-400">
+                            {session.country || "XX"}
+                          </span>
                         </>
                       )}
                     </div>
                   </div>
                 </div>
 
+                {/* Badge de estado */}
                 <div className="flex items-center gap-4">
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-bold border ${status.color}`}
@@ -119,16 +228,23 @@ export const ActiveConnectionsCard = ({ data, adminIp, serverIp }) => {
         </div>
       )}
 
-      <div className="mt-4 pt-4 border-t border-gray-700/50 flex flex-wrap gap-4 text-xs text-gray-500">
+      {/* LEYENDA MEJORADA */}
+      <div className="mt-4 pt-4 border-t border-gray-700/50 flex flex-wrap gap-3 text-xs text-gray-500">
         <span className="flex items-center gap-1">
           <FaUserShield className="text-blue-500" /> Tu IP (Segura)
         </span>
         <span className="flex items-center gap-1">
-          <FaExclamationTriangle className="text-rose-500" /> IP Desconocida
-          (Revisar)
+          <FaSkull className="text-red-500" /> Usuario No Esperado
+        </span>
+        <span className="flex items-center gap-1">
+          <FaExclamationTriangle className="text-orange-500" /> Comando
+          Sospechoso
+        </span>
+        <span className="flex items-center gap-1">
+          <FaFlag className="text-yellow-500" /> IP Externa
         </span>
         <span className="flex items-center gap-1 ml-auto">
-          <FaFlag className="text-yellow-500" /> País según IP
+          <FaServer className="text-green-500" /> IP Interna (Segura)
         </span>
       </div>
     </div>
