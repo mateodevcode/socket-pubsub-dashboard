@@ -143,6 +143,7 @@ export default function AdminPanel() {
             setDiskSpace(parseDashboardData(output));
           }
           if (action === "docker_info") {
+            console.log(data);
             setDockerInfo({
               containers: data.full_state?.containers || [],
               delta: data.delta || {
