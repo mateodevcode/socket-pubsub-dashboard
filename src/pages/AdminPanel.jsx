@@ -145,15 +145,12 @@ export default function AdminPanel() {
           const data = msg.payload || msg;
           const { type, action, success, output } = data;
 
-          if (action === "docker_infog") {
-            console.log(data);
-          }
-
           // ✅ DINÁMICOS: Actualiza cada 5s
           if (action === "ram_info") {
             setRamInfo(parseDashboardData(output));
           }
           if (action === "disk_space") {
+            console.log(output);
             setDiskSpace(parseDashboardData(output));
           }
           if (action === "docker_info") {
@@ -170,8 +167,6 @@ export default function AdminPanel() {
               timestamp: dockerData.timestamp,
               success: dockerData.success,
             });
-
-            console.log("🐳 Docker info recibido:", dockerData);
           }
 
           if (action === "uptime_check") {
