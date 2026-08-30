@@ -150,22 +150,20 @@ export default function AdminPanel() {
             setRamInfo(parseDashboardData(output));
           }
           if (action === "disk_space") {
-            console.log(output);
+            console.log(data);
             setDiskSpace(parseDashboardData(output));
           }
           if (action === "docker_info") {
-            // 👇 Asegúrate de que extrae bien
-            const dockerData = msg.payload || msg;
-
+            console.log(data);
             setDockerInfo({
-              containers: dockerData.full_state?.containers || [],
-              delta: dockerData.delta || {
+              containers: data.full_state?.containers || [],
+              delta: data.delta || {
                 added: [],
                 removed: [],
                 changed: [],
               },
-              timestamp: dockerData.timestamp,
-              success: dockerData.success,
+              timestamp: data.timestamp,
+              success: data.success,
             });
           }
 
