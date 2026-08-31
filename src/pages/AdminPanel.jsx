@@ -144,17 +144,16 @@ export default function AdminPanel() {
             setDiskSpace(parseDashboardData(output));
           }
           if (action === "docker_info") {
-            const parsedOutput = parseDashboardData(output); // ✅ Parsea output
-
+            console.log(data);
             setDockerInfo({
-              containers: parsedOutput?.full_state?.containers || [],
-              delta: parsedOutput?.delta || {
+              containers: data.full_state?.containers || [],
+              delta: data.delta || {
                 added: [],
                 removed: [],
                 changed: [],
               },
-              timestamp: parsedOutput?.timestamp,
-              success: success,
+              timestamp: data.timestamp,
+              success: data.success,
             });
           }
 
