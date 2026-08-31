@@ -140,11 +140,9 @@ export default function AdminPanel() {
             setRamInfo(parseDashboardData(output));
           }
           if (action === "disk_space") {
-            console.log(output);
             setDiskSpace(parseDashboardData(output));
           }
           if (action === "docker_info") {
-            console.log(data);
             const parsedOutput = parseDashboardData(output);
             const containers = parsedOutput?.containers || [];
 
@@ -168,7 +166,7 @@ export default function AdminPanel() {
             setIpInfo(output);
           }
           if (action === "nginx_full") {
-            console.log(output)
+            console.log(output);
             setNginxFull(parseDashboardData(output));
           }
 
