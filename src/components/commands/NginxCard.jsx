@@ -6,7 +6,6 @@ import { FiAlertTriangle, FiCheckCircle } from "react-icons/fi";
 export const NginxCard = ({ data }) => {
   const [expanded, setExpanded] = useState(false);
 
-  // Función para calcular días restantes desde el string de fecha
   const getDaysLeft = (expiryString) => {
     try {
       const expiryDate = new Date(expiryString);
@@ -31,10 +30,17 @@ export const NginxCard = ({ data }) => {
     );
   }
 
-  const getStatusIcon = (status) => {
-    if (status === "healthy")
-      return <FiCheckCircle className="w-5 h-5 text-emerald-500" />;
-    return <FiAlertTriangle className="w-5 h-5 text-amber-500" />;
+  const isNginxActive = data.nginx_active === "active";
+  const statusIcon = isNginxActive ? (
+    <FiCheckCircle className="w-5 h-5 text-emerald-500" />
+  ) : (
+    <FiAlertTriangle className="w-5 h-5 text-red-500" />
+  );
+
+  const getStatusColor = () => {
+    if (isNginxActive)
+      return "text-emerald-400 bg-emerald-900/20 border-emerald-800";
+    return "text-red-400 bg-red-900/20 border-red-800";
   };
 
   const getCertColor = (days) => {
@@ -58,10 +64,15 @@ export const NginxCard = ({ data }) => {
           <div>
             <h3 className="text-lg font-semibold text-gray-100 flex items-center gap-2">
               Nginx Status
-              {getStatusIcon(data.status)}
+              {statusIcon}
+              <span
+                className={`text-xs font-bold px-2 py-1 rounded-full border ${getStatusColor()}`}
+              >
+                {isNginxActive ? "ACTIVO" : "INACTIVO"}
+              </span>
             </h3>
             <p className="text-xs text-gray-400">
-              {data.sites.length} sitios activos • Actualizado cada 5 min
+              {data.sites?.length || 0} sitios activos • Actualizado cada 5 min
             </p>
           </div>
         </div>
@@ -75,13 +86,13 @@ export const NginxCard = ({ data }) => {
       </div>
 
       {/* Resumen rápido */}
-      <div className="grid grid-cols-3 gap-4 mb-4">
+      <div className="grid grid-cols-4 gap-4 mb-4">
         <div className="text-center p-3 bg-gray-900 rounded-lg">
           <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
             Sitios
           </p>
           <p className="text-2xl font-bold text-gray-100">
-            {data.sites.length}
+            {data.sites?.length || 0}
           </p>
         </div>
         <div className="text-center p-3 bg-gray-900 rounded-lg">
@@ -89,7 +100,7 @@ export const NginxCard = ({ data }) => {
             Certificados
           </p>
           <p className="text-2xl font-bold text-gray-100">
-            {data.certs.length}
+            {data.certs?.length || 0}
           </p>
         </div>
         <div className="text-center p-3 bg-gray-900 rounded-lg">
@@ -97,7 +108,17 @@ export const NginxCard = ({ data }) => {
             Puertos
           </p>
           <p className="text-2xl font-bold text-gray-100">
-            {data.ports.length}
+            {data.ports?.length || 0}
+          </p>
+        </div>
+        <div className="text-center p-3 bg-gray-900 rounded-lg">
+          <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+            Estado
+          </p>
+          <p
+            className={`text-2xl font-bold ${isNginxActive ? "text-emerald-400" : "text-red-400"}`}
+          >
+            {isNginxActive ? "✅" : "❌"}
           </p>
         </div>
       </div>
@@ -111,7 +132,7 @@ export const NginxCard = ({ data }) => {
               Sitios Virtuales
             </h4>
             <div className="space-y-2">
-              {data.sites.map((site, idx) => (
+              {(data.sites || []).map((site, idx) => (
                 <div
                   key={idx}
                   className="flex items-center gap-2 p-2 bg-gray-900 rounded-lg"
@@ -129,7 +150,7 @@ export const NginxCard = ({ data }) => {
           </div>
 
           {/* Certificados */}
-          {data.certs.length > 0 && (
+          {(data.certs || []).length > 0 && (
             <div>
               <h4 className="text-sm font-semibold text-gray-300 mb-3 uppercase tracking-wider">
                 Certificados SSL
@@ -163,7 +184,7 @@ export const NginxCard = ({ data }) => {
           )}
 
           {/* Puertos */}
-          {data.ports.length > 0 && (
+          {(data.ports || []).length > 0 && (
             <div>
               <h4 className="text-sm font-semibold text-gray-300 mb-3 uppercase tracking-wider">
                 Puertos en Escucha
@@ -182,7 +203,7 @@ export const NginxCard = ({ data }) => {
           )}
 
           {/* Logs de errores */}
-          {data.errors.length > 0 && (
+          {(data.errors || []).length > 0 && (
             <div>
               <h4 className="text-sm font-semibold text-gray-300 mb-3 uppercase tracking-wider flex items-center gap-2">
                 <FiAlertTriangle className="w-4 h-4 text-amber-500" />
