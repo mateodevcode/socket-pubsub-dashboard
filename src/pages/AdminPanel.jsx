@@ -77,7 +77,6 @@ export default function AdminPanel() {
   useEffect(() => {
     if (adminIp) {
       sendCommand("set_admin_ip", { ip: adminIp });
-      console.log("🏠 Tu IP detectada:", adminIp);
     }
   }, [adminIp]);
 
@@ -166,7 +165,6 @@ export default function AdminPanel() {
             setIpInfo(output);
           }
           if (action === "nginx_full") {
-            console.log(output);
             setNginxFull(parseDashboardData(output));
           }
 
@@ -177,6 +175,7 @@ export default function AdminPanel() {
           }
 
           if (action === "docker_df") {
+            console.log(output);
             setDockerDfData(parseDashboardData(output));
             setDockerDfLoading(false);
           }

@@ -13,18 +13,9 @@ export const DockerTableCard = ({ data }) => {
 
   // Inicializar contenedores
   useEffect(() => {
-    console.log("📋 DockerTableCard - Recibió data:", data);
     if (data?.full_state?.containers) {
-      console.log(
-        "✅ Cargando desde full_state, cantidad:",
-        data.full_state.containers.length,
-      );
       setContainers(data.full_state.containers);
     } else if (data?.containers) {
-      console.log(
-        "✅ Cargando desde containers, cantidad:",
-        data.containers.length,
-      );
       setContainers(data.containers);
     }
   }, [data]); // ✅ CAMBIADO: era [data?.full_state], ahora es [data]
@@ -34,7 +25,6 @@ export const DockerTableCard = ({ data }) => {
     if (!data?.delta) return;
 
     const { added, removed, changed } = data.delta;
-    console.log("🔄 Delta procesado:", { added, removed, changed });
 
     if (added.length > 0 || removed.length > 0) {
       // 🚨 ALERTA: Contenedores agregados o eliminados
@@ -44,7 +34,7 @@ export const DockerTableCard = ({ data }) => {
 
       // Browser notification
       if (added.length > 0) {
-        console.log("🚨 Enviando notificación de contenedores agregados");
+        s;
         new Notification("🚨 Nuevo contenedor detectado!", {
           body: `${added.map((c) => c.name).join(", ")}`,
           icon: "⚠️",
@@ -53,7 +43,6 @@ export const DockerTableCard = ({ data }) => {
         });
       }
       if (removed.length > 0) {
-        console.log("💀 Enviando notificación de contenedores eliminados");
         new Notification("⚠️ Contenedor eliminado", {
           body: `${removed.map((c) => c.name).join(", ")}`,
           icon: "⚠️",
@@ -99,7 +88,6 @@ export const DockerTableCard = ({ data }) => {
         return c;
       });
 
-      console.log("📦 Estado de contenedores actualizado:", updated);
       return updated;
     });
 
@@ -131,7 +119,6 @@ export const DockerTableCard = ({ data }) => {
 
   // ✅ DEBUGGING: Muestra skeleton si no hay contenedores
   if (!containers || containers.length === 0) {
-    console.log("⏳ DockerTableCard - Sin contenedores, mostrando skeleton");
     return (
       <div className="bg-transparent dark:bg-gray-800 rounded-xl shadow-sm border-2 border-gray-800 p-6 animate-pulse lg:col-span-2">
         <div className="h-6 bg-gray-700 rounded w-1/3 mb-6"></div>
