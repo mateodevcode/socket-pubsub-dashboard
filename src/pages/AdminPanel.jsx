@@ -140,21 +140,22 @@ export default function AdminPanel() {
             setRamInfo(parseDashboardData(output));
           }
           if (action === "disk_space") {
+            console.log(output);
             setDiskSpace(parseDashboardData(output));
           }
-          // if (action === "docker_info") {
-          //   console.log(data);
-          //   setDockerInfo({
-          //     containers: data.full_state?.containers || [],
-          //     delta: data.delta || {
-          //       added: [],
-          //       removed: [],
-          //       changed: [],
-          //     },
-          //     timestamp: data.timestamp,
-          //     success: data.success,
-          //   });
-          // }
+          if (action === "docker_info") {
+            console.log(data);
+            setDockerInfo({
+              containers: data.full_state?.containers || [],
+              delta: data.delta || {
+                added: [],
+                removed: [],
+                changed: [],
+              },
+              timestamp: data.timestamp,
+              success: data.success,
+            });
+          }
 
           if (action === "uptime_check") {
             setUptimeCheck(parseDashboardData(output));
