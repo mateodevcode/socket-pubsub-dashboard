@@ -145,15 +145,14 @@ export default function AdminPanel() {
           }
           if (action === "docker_info") {
             console.log(data);
+            const parsedOutput = parseDashboardData(output);
+            const containers = parsedOutput?.containers || [];
+
             setDockerInfo({
-              containers: data.full_state?.containers || [],
-              delta: data.delta || {
-                added: [],
-                removed: [],
-                changed: [],
-              },
-              timestamp: data.timestamp,
-              success: data.success,
+              ...data, // conserva delta, timestamp, success, etc.
+              containers: containers, // reemplaza containers con el parseado
+              full_state: parsedOutput, // opcional, si el componente lo necesita
+              timestamp: data.timestamp || Date.now(),
             });
           }
 
