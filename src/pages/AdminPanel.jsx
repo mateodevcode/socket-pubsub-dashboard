@@ -21,7 +21,7 @@ import { ActiveConnectionsCard } from "../components/commands/ActiveConnectionsC
 import { useAuthStore } from "../store/authStore";
 import { getLogColor } from "../lib/getLogColor";
 import { parseDashboardData } from "../lib/parseDashboardData";
-import { useAdminIp } from "../hooks/useAdminIp";
+import { useAdminIp } from "../hooks/UseAdminIpResult";
 
 export default function AdminPanel() {
   const { user, logout } = useAuthStore();
