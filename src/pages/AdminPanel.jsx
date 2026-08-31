@@ -168,6 +168,7 @@ export default function AdminPanel() {
             setIpInfo(output);
           }
           if (action === "nginx_full") {
+            console.log(output)
             setNginxFull(parseDashboardData(output));
           }
 
