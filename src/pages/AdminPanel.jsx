@@ -186,18 +186,11 @@ export default function AdminPanel() {
           }
 
           if (action === "network_threats") {
-            console.log("🛡️ [network_threats] output recibido:", output);
-            console.log(
-              "🛡️ [network_threats] parsed:",
-              parseDashboardData(output),
-            );
             setThreatsData(parseDashboardData(output));
             setThreatsLoading(false);
           }
 
           if (action === "get_threats_history") {
-            console.log("📜 [get_threats_history] output:", output);
-            console.log("📜 [get_threats_history] success:", success);
             if (success) {
               const parsed = parseDashboardData(output);
               console.log("📜 [get_threats_history] parsed:", parsed);
