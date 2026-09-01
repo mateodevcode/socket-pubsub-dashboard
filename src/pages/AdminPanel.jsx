@@ -186,12 +186,15 @@ export default function AdminPanel() {
           }
 
           if (action === "network_threats") {
+            console.log(output);
             setThreatsData(parseDashboardData(output));
             setThreatsLoading(false);
           }
 
           if (action === "get_threats_history") {
+            console.log(output);
             if (success) {
+              console.log(output);
               const parsedOutput = parseDashboardData(output);
               setThreatsHistory(parsedOutput?.history || []);
             }
@@ -199,7 +202,9 @@ export default function AdminPanel() {
           }
 
           if (action === "clear_threats_db") {
+            console.log(output);
             if (success) {
+              console.log(output);
               setThreatsHistory([]);
               setTimeout(() => sendCommand("get_threats_history"), 500);
             }
@@ -207,14 +212,18 @@ export default function AdminPanel() {
           }
 
           if (action === "get_top_attackers") {
+            console.log(output);
             if (success) {
+              console.log(output);
               const parsedOutput = parseDashboardData(output);
               setTopAttackers(parsedOutput?.attackers || []);
             }
           }
 
           if (action === "get_active_connections") {
+            console.log(output);
             if (success) {
+              console.log(output);
               const parsedOutput = parseDashboardData(output);
               setConnectionsData(parsedOutput);
             }
