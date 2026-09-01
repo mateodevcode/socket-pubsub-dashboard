@@ -5,6 +5,7 @@ import {
   FaHdd,
   FaExclamationTriangle,
   FaTimes,
+  FaSpinner,
 } from "react-icons/fa";
 
 export const DockerCleanupCard = ({
@@ -17,19 +18,15 @@ export const DockerCleanupCard = ({
 }) => {
   const [showModal, setShowModal] = useState(false);
 
-  const handlePruneClick = () => {
-    setShowModal(true);
-  };
-
-  const handleCancel = () => {
-    setShowModal(false);
-  };
-
+  const handlePruneClick = () => setShowModal(true);
+  const handleCancel = () => setShowModal(false);
   const handleConfirm = () => {
     setShowModal(false);
-    // Llamamos a la función del padre que envía el comando y maneja el loading
     onPrune();
   };
+
+  // Determinar si hay datos para mostrar
+  const hasData = data && data.df && data.df.length > 0;
 
   return (
     <div className="bg-transparent dark:bg-gray-800 rounded-xl shadow-sm border-2 border-gray-800 p-6 hover:shadow-lg transition-all duration-200 w-full relative">
@@ -50,10 +47,10 @@ export const DockerCleanupCard = ({
         </div>
         <button
           onClick={handlePruneClick}
-          disabled={isPruning || isLoading}
+          disabled={isPruning || isLoading || !hasData}
           className="flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors border border-rose-500/30"
         >
-          <FaTrashAlt className={isPruning ? "animate-spin" : ""} />
+          {isPruning ? <FaSpinner className="animate-spin" /> : <FaTrashAlt />}
           {isPruning ? "Limpiando..." : "Limpiar Basura"}
         </button>
       </div>
@@ -65,10 +62,23 @@ export const DockerCleanupCard = ({
         </div>
       )}
 
-      {/* Tabla de Uso */}
-      {!data || !data.df || data.df.length === 0 ? (
+      {/* Contenido principal */}
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+          <FaSpinner className="w-8 h-8 animate-spin text-blue-400 mb-4" />
+          <p className="text-sm">Cargando información de disco...</p>
+        </div>
+      ) : !hasData ? (
         <div className="text-center py-8 text-gray-500">
-          Cargando información de disco...
+          <p className="text-sm">No hay datos de uso de Docker disponibles.</p>
+          {onRefresh && (
+            <button
+              onClick={() => onRefresh("docker_df")}
+              className="mt-3 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm text-gray-200 transition-colors"
+            >
+              Reintentar
+            </button>
+          )}
         </div>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-gray-700">
