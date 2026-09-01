@@ -99,6 +99,7 @@ export const PortsCard = ({ data, isLoading, onRefresh }) => {
       8080: "java/node",
       9090: "prometheus",
       9200: "elasticsearch",
+      41641: "Tailscale",
     };
 
     return processByPort[portNum] || "system";
