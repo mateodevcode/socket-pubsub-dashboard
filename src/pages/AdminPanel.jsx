@@ -186,17 +186,22 @@ export default function AdminPanel() {
           }
 
           if (action === "network_threats") {
-            console.log(output);
+            console.log("🛡️ [network_threats] output recibido:", output);
+            console.log(
+              "🛡️ [network_threats] parsed:",
+              parseDashboardData(output),
+            );
             setThreatsData(parseDashboardData(output));
             setThreatsLoading(false);
           }
 
           if (action === "get_threats_history") {
-            console.log(output);
+            console.log("📜 [get_threats_history] output:", output);
+            console.log("📜 [get_threats_history] success:", success);
             if (success) {
-              console.log(output);
-              const parsedOutput = parseDashboardData(output);
-              setThreatsHistory(parsedOutput?.history || []);
+              const parsed = parseDashboardData(output);
+              console.log("📜 [get_threats_history] parsed:", parsed);
+              setThreatsHistory(parsed?.history || []);
             }
             setThreatsLoading(false);
           }
@@ -212,11 +217,12 @@ export default function AdminPanel() {
           }
 
           if (action === "get_top_attackers") {
-            console.log(output);
+            console.log("🏆 [get_top_attackers] output:", output);
+            console.log("🏆 [get_top_attackers] success:", success);
             if (success) {
-              console.log(output);
-              const parsedOutput = parseDashboardData(output);
-              setTopAttackers(parsedOutput?.attackers || []);
+              const parsed = parseDashboardData(output);
+              console.log("🏆 [get_top_attackers] parsed:", parsed);
+              setTopAttackers(parsed?.attackers || []);
             }
           }
 
