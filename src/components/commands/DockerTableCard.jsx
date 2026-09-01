@@ -34,7 +34,6 @@ export const DockerTableCard = ({ data }) => {
 
       // Browser notification
       if (added.length > 0) {
-        s;
         new Notification("🚨 Nuevo contenedor detectado!", {
           body: `${added.map((c) => c.name).join(", ")}`,
           icon: "⚠️",
